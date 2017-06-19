@@ -1,0 +1,24 @@
+{
+  "name": "byteball-tcp-proxy",
+  "description": "Byteball TCP Proxy",
+  "author": "Erich Erstu <erich@heathmont.net>",
+  "version": "0.0.1",
+  "main": "main.js",
+  "keywords": [
+    "byteball",
+    "proxy",
+    "TCP"
+  ],
+  "license": "MIT",
+  "repository": {
+    "url": "git://github.com/heathmont/bb2tcp.git",
+    "type": "git"
+  },
+  "bugs": {
+    "url": "https://github.com/heathmont/bb2tcp/issues"
+  },
+  "dependencies": {
+    "byteballcore": "git+https://github.com/byteball/byteballcore.git",
+    "headless-byteball": "git+https://github.com/byteball/headless-byteball.git"
+  }
+}
