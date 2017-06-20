@@ -18,7 +18,7 @@ exports.bServeAsHub              = false;
 exports.bLight                   = true;
 exports.KEYS_FILENAME            = 'keys.json';
 exports.TCP_HOST                 = 'india.colorado.edu';
-exports.TCP_PORT                 = '13';
+exports.TCP_PORT                 = 13;
 
 console.log('Finished conf.js of the TCP Proxy.');
 

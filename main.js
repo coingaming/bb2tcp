@@ -8,13 +8,14 @@ var events  = require('byteballcore/event_bus.js');
 var wallet  = require('byteballcore/wallet.js');
 var deskap  = require('byteballcore/desktop_app.js');
 var crypto  = require('crypto');
+var net     = require('net');
 var mypack  = require('./package.json');
-var spawn   = require('child_process').spawn;
 
 var DATADIR = deskap.getAppDataDir();
 var KEYFILE = DATADIR + '/' + config.KEYS_FILENAME;
 var RETRIES = 1;
 var RUNNING = false;
+var TUNNELS = {};
 
 function warn(text) {
     console.log("\x1B[1;31m"+text+"\x1B[0m");
@@ -35,10 +36,6 @@ function send_greeting(deviceAddress) {
        +'Author:  @hyena from byteball.slack.com\n'
        +'Source:  https://github.com/heathmont/bb2tcp\n'
        +'-------------------------------------------------------------\n');
-
-    device.sendMessageToDevice(deviceAddress, 'text',
-        'Welcome, '+deviceAddress+'!\n'
-       +'You are now connected to tcp://'+config.TCP_HOST+':'+config.TCP_PORT+'.\n');
 }
 
 function read_keys(on_done){
@@ -81,6 +78,58 @@ function get_byte_count(s) {
     return encodeURI(s).split(/%..|./).length - 1;
 }
 
+function make_tunnel(device_addr) {
+    var client = new net.Socket();
+    client.byteball_device = device_addr;
+
+    client.connect(config.TCP_PORT, config.TCP_HOST, function() {
+        notify('Device '+client.byteball_device+' connected to '+config.TCP_HOST+':'+config.TCP_PORT+'.');
+        device.sendMessageToDevice(client.byteball_device, 'text', '#Connected to '+config.TCP_HOST+':'+config.TCP_PORT+'.');
+        TUNNELS[client.byteball_device].ready = true;
+        update_tunnel(client.byteball_device);
+    });
+
+    client.on('data', function(data) {
+        console.log("\x1B[1;31mSent \x1B[1;37m"+(data.byteLength)
+                   +"\x1B[1;31m bytes to \x1B[1;33m"+client.byteball_device
+                   +"\x1B[1;31m device.\x1B[0m");
+        console.log(data.toString('utf8'));
+        device.sendMessageToDevice(client.byteball_device, 'text', data.toString('utf8'));
+    });
+
+    client.on('close', function() {
+        notify('Device '+client.byteball_device+' disconnected from '+config.TCP_HOST+':'+config.TCP_PORT+'.');
+        device.sendMessageToDevice(client.byteball_device, 'text', '#Connection lost.');
+        delete TUNNELS[client.byteball_device].client;
+        TUNNELS[client.byteball_device].client = null;
+        TUNNELS[client.byteball_device].ready  = false;
+    });
+
+    client.on('error', function(err) {
+        warn('Failed to connect to '+config.TCP_HOST+':'+config.TCP_PORT+'.');
+    });
+
+    if (device_addr in TUNNELS) {
+        TUNNELS[device_addr].client = client;
+        TUNNELS[device_addr].ready  = false;
+        return;
+    }
+
+    var tunnel = {};
+    tunnel["client"] = client;
+    tunnel["input"]  = [];
+    tunnel["ready"]  = false;
+    TUNNELS[device_addr] = tunnel;
+}
+
+function update_tunnel(device_addr) {
+    if (!(device_addr in TUNNELS)) return;
+    var tunnel = TUNNELS[device_addr];
+    if (tunnel.client === null || tunnel.input.length === 0 || !tunnel.ready) return;
+    tunnel.client.write(tunnel.input.join(""));
+    tunnel.input = [];
+}
+
 function init() {
     if (!config.permanent_pairing_secret) {
         throw Error('No config.permanent_pairing_secret defined!');
@@ -104,7 +153,8 @@ function init() {
         device.setDeviceHub(config.hub);
         var my_device_pubkey = device.getMyDevicePubKey();
         console.log("\x1B[1;33mPublic key\x1B[0m:   "+my_device_pubkey);
-        console.log("\x1B[1;32mPairing code\x1B[0m: "+my_device_pubkey+"@"+config.hub+"#"+config.permanent_pairing_secret);
+        console.log("\x1B[1;32mPairing code\x1B[0m: "+my_device_pubkey
+                   +"@"+config.hub+"#"+config.permanent_pairing_secret);
         RUNNING = true;
     });
 }
@@ -118,17 +168,16 @@ function main() {
 
     events.on('paired', function (device_addr) {
         send_greeting(device_addr);
+        if (!(device_addr in TUNNELS) || TUNNELS[device_addr].client == null) make_tunnel(device_addr);
     });
 
     events.on('text', function (device_addr, text) {
-        console.log("\x1B[1;32mReceived \x1B[1;37m"+(get_byte_count(text))+"\x1B[1;32m bytes from \x1B[1;33m"+device_addr+"\x1B[1;32m device.\x1B[0m");
-        var printf = spawn('printf', ['%s', text]);
-        var netcat = spawn('nc',     ['-q', '60', '-w', '60', config.TCP_HOST, config.TCP_PORT]);
-        printf.stdout.pipe(netcat.stdin);
-        netcat.stdout.on('data', function(chunk) {
-            console.log("\x1B[1;31mSent \x1B[1;37m"+(chunk.byteLength)+"\x1B[1;31m bytes to \x1B[1;33m"+device_addr+"\x1B[1;31m device.\x1B[0m");
-            device.sendMessageToDevice(device_addr, 'text', chunk.toString('utf8'));
-        });
+        console.log("\x1B[1;32mReceived \x1B[1;37m"+(get_byte_count(text))
+                   +"\x1B[1;32m bytes from \x1B[1;33m"+device_addr
+                   +"\x1B[1;32m device.\x1B[0m");
+        if (!(device_addr in TUNNELS) || TUNNELS[device_addr].client == null) make_tunnel(device_addr);
+        TUNNELS[device_addr].input.push(text+"\n");
+        update_tunnel(device_addr);
     });
 
     notify("TCP Proxy is ready to rock!");
