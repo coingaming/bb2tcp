@@ -93,7 +93,6 @@ function make_tunnel(device_addr) {
         console.log("\x1B[1;31mSent \x1B[1;37m"+(data.byteLength)
                    +"\x1B[1;31m bytes to \x1B[1;33m"+client.byteball_device
                    +"\x1B[1;31m device.\x1B[0m");
-        console.log(data.toString('utf8'));
         device.sendMessageToDevice(client.byteball_device, 'text', data.toString('utf8'));
     });
 
