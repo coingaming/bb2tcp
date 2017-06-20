@@ -15,8 +15,8 @@ the other device. Then scan the following QR code, or input the address manually
 [AhzAGwjEe73H2Xz71rdLoOczI8YHGuJPHQWQT6QTLsve@byteball.org/bb#0000](byteball:AhzAGwjEe73H2Xz71rdLoOczI8YHGuJPHQWQT6QTLsve@byteball.org/bb#0000)
 
 ## Setup
-- *Edit `conf.js` and define your TCP host:port.*
 - `npm install`
-- `node main.js`
+- `node bb2tcp.js <host> <port>`
+  *node bb2tcp.js localhost 4000*
 - Get the *pairing code* from the process log.
 

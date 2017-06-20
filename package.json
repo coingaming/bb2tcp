@@ -2,8 +2,8 @@
   "name": "byteball-tcp-proxy",
   "description": "Byteball TCP Proxy",
   "author": "Erich Erstu <erich@heathmont.net>",
-  "version": "1.0.0",
-  "main": "main.js",
+  "version": "1.0.1",
+  "main": "bb2tcp.js",
   "keywords": [
     "byteball",
     "proxy",
