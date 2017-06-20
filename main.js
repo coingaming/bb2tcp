@@ -16,6 +16,8 @@ var KEYFILE = DATADIR + '/' + config.KEYS_FILENAME;
 var RETRIES = 1;
 var RUNNING = false;
 var TUNNELS = {};
+var TO_HOST = config.TCP_HOST;
+var TO_PORT = config.TCP_PORT;
 
 function warn(text) {
     console.log("\x1B[1;31m"+text+"\x1B[0m");
@@ -82,9 +84,8 @@ function make_tunnel(device_addr) {
     var client = new net.Socket();
     client.byteball_device = device_addr;
 
-    client.connect(config.TCP_PORT, config.TCP_HOST, function() {
-        notify('Device '+client.byteball_device+' connected to '+config.TCP_HOST+':'+config.TCP_PORT+'.');
-        device.sendMessageToDevice(client.byteball_device, 'text', '#Connected to '+config.TCP_HOST+':'+config.TCP_PORT+'.');
+    client.connect(TO_PORT, TO_HOST, function() {
+        notify('Device '+client.byteball_device+' connected to '+TO_HOST+':'+TO_PORT+'.');
         TUNNELS[client.byteball_device].ready = true;
         update_tunnel(client.byteball_device);
     });
@@ -97,7 +98,7 @@ function make_tunnel(device_addr) {
     });
 
     client.on('close', function() {
-        notify('Device '+client.byteball_device+' disconnected from '+config.TCP_HOST+':'+config.TCP_PORT+'.');
+        notify('Device '+client.byteball_device+' disconnected from '+TO_HOST+':'+TO_PORT+'.');
         device.sendMessageToDevice(client.byteball_device, 'text', '#Connection lost.');
         delete TUNNELS[client.byteball_device].client;
         TUNNELS[client.byteball_device].client = null;
@@ -105,7 +106,7 @@ function make_tunnel(device_addr) {
     });
 
     client.on('error', function(err) {
-        warn('Failed to connect to '+config.TCP_HOST+':'+config.TCP_PORT+'.');
+        warn('Failed to connect to '+TO_HOST+':'+TO_PORT+'.');
     });
 
     if (device_addr in TUNNELS) {
@@ -165,6 +166,19 @@ function main() {
         return;
     }
 
+    var host = null;
+    var port = null;
+    process.argv.forEach(function (val, index, array) {
+        console.log(index + ': ' + val);
+             if (index === 2) host = val;
+        else if (index === 3) port = val;
+    });
+    if (host !== null && port !== null && /^\d+$/.test(port)) {
+        port = parseInt(port);
+        TO_HOST = host;
+        TO_PORT = port;
+    }
+
     events.on('paired', function (device_addr) {
         send_greeting(device_addr);
         if (!(device_addr in TUNNELS) || TUNNELS[device_addr].client == null) make_tunnel(device_addr);
@@ -179,7 +193,7 @@ function main() {
         update_tunnel(device_addr);
     });
 
-    notify("TCP Proxy is ready to rock!");
+    notify("TCP Proxy is ready to rock on "+TO_HOST+":"+TO_PORT+"!");
 }
 
 init();
