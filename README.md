@@ -16,7 +16,7 @@ the other device. Then scan the following QR code, or input the address manually
 
 ## Setup
 - `npm install`
-- `node bb2tcp.js <host> <port>`
-  *node bb2tcp.js localhost 4000*
+- `node bb2tcp.js <host> <port> <name> <desc>`
+  *node bb2tcp.js india.colorado.edu 13 "Current Time" "Enjoy your free time..." *
 - Get the *pairing code* from the process log.
 

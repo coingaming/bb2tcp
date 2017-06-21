@@ -18,6 +18,8 @@ var RUNNING = false;
 var TUNNELS = {};
 var TO_HOST = config.TCP_HOST;
 var TO_PORT = config.TCP_PORT;
+var DEVNAME = config.deviceName;
+var DEVDESC = null;
 
 function warn(text) {
     console.log("\x1B[1;31m"+text+"\x1B[0m");
@@ -32,12 +34,17 @@ function notify(text) {
 }
 
 function send_greeting(deviceAddress) {
-    device.sendMessageToDevice(deviceAddress, 'text',
-        'Byteball-to-TCP Proxy v'+ mypack.version + '\n'
-       +'-------------------------------------------------------------\n'
-       +'Author:  @hyena from byteball.slack.com\n'
-       +'Source:  https://github.com/heathmont/bb2tcp\n'
-       +'-------------------------------------------------------------\n');
+    if (DEVDESC === null) {
+        device.sendMessageToDevice(deviceAddress, 'text',
+            'Byteball-to-TCP Proxy v'+ mypack.version + '\n'
+           +'-------------------------------------------------------------\n'
+           +'Author:  @hyena from byteball.slack.com\n'
+           +'Source:  https://github.com/heathmont/bb2tcp\n'
+           +'-------------------------------------------------------------\n');
+    }
+    else if (DEVDESC.length > 0) {
+        device.sendMessageToDevice(deviceAddress, 'text', DEVDESC);
+    }
 }
 
 function read_keys(on_done){
@@ -130,6 +137,34 @@ function update_tunnel(device_addr) {
     tunnel.input = [];
 }
 
+function args() {
+    var host = null;
+    var port = null;
+    var name = null;
+    var desc = null;
+    var argc = 0;
+    var arg0 = null;
+    var arg1 = null;
+    process.argv.forEach(function (val, index, array) {
+             if (index === 0) arg0 = val;
+        else if (index === 1) arg1 = val;
+        else if (index === 2) host = val;
+        else if (index === 3) port = val;
+        else if (index === 4) name = val;
+        else if (index === 5) desc = val;
+        argc++;
+    });
+    if (host !== null && port !== null && /^\d+$/.test(port)) {
+        port = parseInt(port);
+        TO_HOST = host;
+        TO_PORT = port;
+        if (name !== null) DEVNAME = name;
+        if (desc !== null) DEVDESC = desc;
+    }
+    if (argc > 2) return;
+    notify("Example usage: "+arg0+" "+arg1+" <host> <port> <name> <desc>");
+}
+
 function init() {
     if (!config.permanent_pairing_secret) {
         throw Error('No config.permanent_pairing_secret defined!');
@@ -149,7 +184,7 @@ function init() {
         };
         device.setDevicePrivateKey(dev_privkey);
         device.setTempKeys(dev_temp_privkey, dev_prev_temp_privkey, save_temp_keys);
-        device.setDeviceName(config.deviceName);
+        device.setDeviceName(DEVNAME);
         device.setDeviceHub(config.hub);
         var my_device_pubkey = device.getMyDevicePubKey();
         console.log("\x1B[1;33mPublic key\x1B[0m:   "+my_device_pubkey);
@@ -164,19 +199,6 @@ function main() {
         notify("Initializing...");
         setTimeout(function(){ main(); }, 1000);
         return;
-    }
-
-    var host = null;
-    var port = null;
-    process.argv.forEach(function (val, index, array) {
-        console.log(index + ': ' + val);
-             if (index === 2) host = val;
-        else if (index === 3) port = val;
-    });
-    if (host !== null && port !== null && /^\d+$/.test(port)) {
-        port = parseInt(port);
-        TO_HOST = host;
-        TO_PORT = port;
     }
 
     events.on('paired', function (device_addr) {
@@ -196,6 +218,7 @@ function main() {
     notify("TCP Proxy is ready to rock on "+TO_HOST+":"+TO_PORT+"!");
 }
 
+args();
 init();
 main();
 
