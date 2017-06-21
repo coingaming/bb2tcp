@@ -1,6 +1,6 @@
 # Byteball-to-TCP Proxy
 This program acts a as TCP proxy on the [Byteball network](https://byteball.org).
-For the purpose of demonstration, it serves [the current time](telnet://india.colorado.edu:13).
+By default, it serves the current time from telnet://india.colorado.edu (port 13).
 However, it can trivially be configured to serve any TCP service over the Byteball network.
 
 ## Features
@@ -10,9 +10,9 @@ Incoming text messages are forwarded to the predefined host. Data that arrives a
 In the [Byteball wallet](https://byteball.org/#download), go to PAIRED DEVICES -> Add a new device -> Accept invitation from
 the other device. Then scan the following QR code, or input the address manually.
 
-![AhzAGwjEe73H2Xz71rdLoOczI8YHGuJPHQWQT6QTLsve@byteball.org/bb#0000 ""](https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=byteball%3AAhzAGwjEe73H2Xz71rdLoOczI8YHGuJPHQWQT6QTLsve%40byteball.org%2Fbb%230000)
+![A/SCXz5tNuJDLuCO8PXpsfUoL7dCMBGnvSST7z0YPXjd@byteball.org/bb#0000 ""](https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=byteball%3AA%2FSCXz5tNuJDLuCO8PXpsfUoL7dCMBGnvSST7z0YPXjd%40byteball.org%2Fbb%230000)
 
-[AhzAGwjEe73H2Xz71rdLoOczI8YHGuJPHQWQT6QTLsve@byteball.org/bb#0000](byteball:AhzAGwjEe73H2Xz71rdLoOczI8YHGuJPHQWQT6QTLsve@byteball.org/bb#0000)
+[A/SCXz5tNuJDLuCO8PXpsfUoL7dCMBGnvSST7z0YPXjd@byteball.org/bb#0000](byteball:A/SCXz5tNuJDLuCO8PXpsfUoL7dCMBGnvSST7z0YPXjd@byteball.org/bb#0000)
 
 ## Setup
 - `npm install`
