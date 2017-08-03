@@ -5,6 +5,8 @@ However, it can trivially be configured to serve any TCP service over the Byteba
 
 ## Features
 Incoming text messages are forwarded to the predefined host. Data that arrives as a response is sent back to the guest device.
+If the *open* parameter is defined its value is sent to the server immediately after tunnel establishment. The `%s` part in the
+*open* parameter is replaced by the Byteball device address.
 
 ## Demo
 In the [Byteball wallet](https://byteball.org/#download), go to PAIRED DEVICES -> Add a new device -> Accept invitation from
@@ -16,8 +18,8 @@ the other device. Then scan the following QR code, or input the address manually
 
 ## Setup
 - `npm install`
-- `node bb2tcp.js <host> <port> <name> <desc>`
+- `node bb2tcp.js <host> <port> <name> <desc> <open>`
 
-  *node bb2tcp.js india.colorado.edu 13 "Current Time" "Welcome!"*
+  *node bb2tcp.js india.colorado.edu 13 "Current Time" "Welcome!" "device %s"*
 - Get the *pairing code* from the process log.
 

@@ -20,6 +20,7 @@ var TO_HOST = config.TCP_HOST;
 var TO_PORT = config.TCP_PORT;
 var DEVNAME = config.deviceName;
 var DEVDESC = null;
+var OPENTXT = null;
 
 function warn(text) {
     console.log("\x1B[1;31m"+text+"\x1B[0m");
@@ -94,6 +95,10 @@ function make_tunnel(device_addr) {
     client.connect(TO_PORT, TO_HOST, function() {
         notify('Device '+client.byteball_device+' connected to '+TO_HOST+':'+TO_PORT+'.');
         TUNNELS[client.byteball_device].ready = true;
+        if (OPENTXT !== null) {
+            var str = OPENTXT.replace(/%s/g, client.byteball_device);
+            TUNNELS[client.byteball_device].client.write(str);
+        }
         update_tunnel(client.byteball_device);
     });
 
@@ -142,6 +147,7 @@ function args() {
     var port = null;
     var name = null;
     var desc = null;
+    var open = null;
     var argc = 0;
     var arg0 = null;
     var arg1 = null;
@@ -152,6 +158,7 @@ function args() {
         else if (index === 3) port = val;
         else if (index === 4) name = val;
         else if (index === 5) desc = val;
+        else if (index === 6) open = val;
         argc++;
     });
     if (host !== null && port !== null && /^\d+$/.test(port)) {
@@ -160,9 +167,10 @@ function args() {
         TO_PORT = port;
         if (name !== null) DEVNAME = name;
         if (desc !== null) DEVDESC = desc;
+        if (open !== null) OPENTXT = open;
     }
     if (argc > 2) return;
-    notify("Example usage: "+arg0+" "+arg1+" <host> <port> <name> <desc>");
+    notify("Example usage: "+arg0+" "+arg1+" <host> <port> <name> <desc> <open>");
 }
 
 function init() {
