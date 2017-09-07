@@ -16,6 +16,7 @@ exports.hub                      = 'byteball.org/bb';
 exports.permanent_pairing_secret = '0000';
 exports.bServeAsHub              = false;
 exports.bLight                   = true;
+exports.bIgnoreUnpairRequests    = true;
 exports.KEYS_FILENAME            = 'keys.json';
 exports.TCP_HOST                 = 'india.colorado.edu';
 exports.TCP_PORT                 = 13;
