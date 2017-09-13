@@ -115,6 +115,7 @@ function make_tunnel(device_addr) {
         delete TUNNELS[client.byteball_device].client;
         TUNNELS[client.byteball_device].client = null;
         TUNNELS[client.byteball_device].ready  = false;
+        TUNNELS[client.byteball_device].input  = [];
     });
 
     client.on('error', function(err) {
