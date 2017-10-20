@@ -20,6 +20,7 @@ exports.bIgnoreUnpairRequests    = true;
 exports.KEYS_FILENAME            = 'keys.json';
 exports.TCP_HOST                 = 'india.colorado.edu';
 exports.TCP_PORT                 = 13;
+exports.TCP_FROM                 = '';
 
 console.log('Finished conf.js of the TCP Proxy.');
 

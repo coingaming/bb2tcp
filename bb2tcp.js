@@ -18,6 +18,7 @@ var RUNNING = false;
 var TUNNELS = {};
 var TO_HOST = config.TCP_HOST;
 var TO_PORT = config.TCP_PORT;
+var FROM_IP = config.TCP_FROM;
 var DEVNAME = config.deviceName;
 var DEVDESC = null;
 var OPENTXT = null;
@@ -88,19 +89,34 @@ function get_byte_count(s) {
     return encodeURI(s).split(/%..|./).length - 1;
 }
 
+function new_connection(client) {
+    notify('Device '+client.byteball_device+' connected to '+TO_HOST+':'+TO_PORT+'.');
+    TUNNELS[client.byteball_device].ready = true;
+    if (OPENTXT !== null) {
+        var str = OPENTXT.replace(/%s/g, client.byteball_device);
+        TUNNELS[client.byteball_device].client.write(str);
+    }
+    update_tunnel(client.byteball_device);
+}
+
 function make_tunnel(device_addr) {
     var client = new net.Socket();
     client.byteball_device = device_addr;
 
-    client.connect(TO_PORT, TO_HOST, function() {
-        notify('Device '+client.byteball_device+' connected to '+TO_HOST+':'+TO_PORT+'.');
-        TUNNELS[client.byteball_device].ready = true;
-        if (OPENTXT !== null) {
-            var str = OPENTXT.replace(/%s/g, client.byteball_device);
-            TUNNELS[client.byteball_device].client.write(str);
-        }
-        update_tunnel(client.byteball_device);
-    });
+    if (FROM_IP.length === 0) {
+        client.connect(TO_PORT, TO_HOST, function() {
+            new_connection(client);
+        });
+    }
+    else {
+        client.connect({
+            port: TO_PORT,
+            host: TO_HOST,
+            localAddress: FROM_IP
+        }, function() {
+            new_connection(client);
+        });
+    }
 
     client.on('data', function(data) {
         console.log("\x1B[1;31mSent \x1B[1;37m"+(data.byteLength)
@@ -149,6 +165,7 @@ function args() {
     var name = null;
     var desc = null;
     var open = null;
+    var from = null;
     var argc = 0;
     var arg0 = null;
     var arg1 = null;
@@ -160,6 +177,7 @@ function args() {
         else if (index === 4) name = val;
         else if (index === 5) desc = val;
         else if (index === 6) open = val;
+        else if (index === 7) from = val;
         argc++;
     });
     if (host !== null && port !== null && /^\d+$/.test(port)) {
@@ -169,9 +187,10 @@ function args() {
         if (name !== null) DEVNAME = name;
         if (desc !== null) DEVDESC = desc;
         if (open !== null) OPENTXT = open;
+        if (from !== null) FROM_IP = from;
     }
     if (argc > 2) return;
-    notify("Example usage: "+arg0+" "+arg1+" <host> <port> <name> <desc> <open>");
+    notify("Example usage: "+arg0+" "+arg1+" <host> <port> <name> <desc> <open> <from>");
 }
 
 function init() {
