@@ -19,12 +19,19 @@ the other device. Then scan the following QR code, or input the address manually
 ## Setup
 - `npm install`
 - `node bb2tcp.js <host> <port> <name> <desc> <open> <from>`
+
   **host** --- host name or the IP address of the TCP server
+  
   **port** --- port number of the TCP server
+  
   **name** --- name of this Byteball chatbot
+  
   **desc** --- initial greeting message shown to freshly paired Byteball devices
+  
   **open** --- message sent to the TCP server where `%s` is replaced with the device address
+  
   **from** --- source IP address to use when connecting to the TCP server
+  
   *Example:* `node bb2tcp.js india.colorado.edu 13 "Current Time" "Welcome!" "device %s" "127.0.0.7"`
 - Get the *pairing code* from the process log.
 
