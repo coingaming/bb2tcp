@@ -7,8 +7,10 @@ var device  = require('byteballcore/device.js');
 var events  = require('byteballcore/event_bus.js');
 var wallet  = require('byteballcore/wallet.js');
 var deskap  = require('byteballcore/desktop_app.js');
+var objhash = require('byteballcore/object_hash.js');
 var crypto  = require('crypto');
 var net     = require('net');
+var exec    = require('child_process').exec;
 var mypack  = require('./package.json');
 
 var DATADIR = deskap.getAppDataDir();
@@ -22,6 +24,7 @@ var FROM_IP = config.TCP_FROM;
 var DEVNAME = config.deviceName;
 var DEVDESC = null;
 var OPENTXT = null;
+var PAIRTXT = null;
 
 function warn(text) {
     console.log("\x1B[1;31m"+text+"\x1B[0m");
@@ -166,6 +169,7 @@ function args() {
     var desc = null;
     var open = null;
     var from = null;
+    var pair = null;
     var argc = 0;
     var arg0 = null;
     var arg1 = null;
@@ -177,7 +181,8 @@ function args() {
         else if (index === 4) name = val;
         else if (index === 5) desc = val;
         else if (index === 6) open = val;
-        else if (index === 7) from = val;
+        else if (index === 7) pair = val;
+        else if (index === 8) from = val;
         argc++;
     });
     if (host !== null && port !== null && /^\d+$/.test(port)) {
@@ -187,6 +192,7 @@ function args() {
         if (name !== null) DEVNAME = name;
         if (desc !== null) DEVDESC = desc;
         if (open !== null) OPENTXT = open;
+        if (pair !== null) PAIRTXT = pair;
         if (from !== null) FROM_IP = from;
     }
     if (argc > 2) return;
@@ -229,9 +235,25 @@ function main() {
         return;
     }
 
-    events.on('paired', function (device_addr) {
+    events.on('paired', function (device_addr, secret) {
+        notify("Paired "+device_addr+" ("+secret+").");
         send_greeting(device_addr);
         if (!(device_addr in TUNNELS) || TUNNELS[device_addr].client == null) make_tunnel(device_addr);
+    });
+
+    events.on('pairing_attempt', function (pairing_request, pairing_secret) {
+        if (PAIRTXT === null) return;
+
+        var device_addr = ( typeof pairing_secret !== 'undefined' && pairing_secret !== null ) ? pairing_request : pairing_request.device_addr;
+        var secret      = ( typeof pairing_secret !== 'undefined' && pairing_secret !== null ) ? pairing_secret  : pairing_request.pairing_secret;
+        alert("Pairing attempt from "+device_addr+" ("+secret+").");
+        if (typeof pairing_secret === 'undefined' || pairing_secret === null) {
+            pairing_request.pairing_secret = config.permanent_pairing_secret;
+        }
+
+        var cmd = PAIRTXT.replace(/%s/g, Buffer.from(secret, 'utf8').toString('hex'));
+        cmd = cmd.replace(/%d/g, device_addr);
+        exec("{ "+cmd+" ; } > /dev/null &");
     });
 
     events.on('text', function (device_addr, text) {

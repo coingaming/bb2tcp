@@ -6,7 +6,8 @@ However, it can trivially be configured to serve any TCP service over the Byteba
 ## Features
 Incoming text messages are forwarded to the predefined host. Data that arrives as a response is sent back to the guest device.
 If the *open* parameter is defined its value is sent to the server immediately after tunnel establishment. The `%s` part in the
-*open* parameter is replaced by the Byteball device address.
+*open* parameter is replaced by the Byteball device address. If the *pair* parameter is defined its value is executed as a
+system command after replacing `%s` with the hex string representation of the used pairing secret and `%d` with the device address.
 
 ## Demo
 In the [Byteball wallet](https://byteball.org/#download), go to PAIRED DEVICES -> Add a new device -> Accept invitation from
@@ -18,20 +19,22 @@ the other device. Then scan the following QR code, or input the address manually
 
 ## Setup
 - `npm install`
-- `node bb2tcp.js <host> <port> <name> <desc> <open> <from>`
+- `node bb2tcp.js <host> <port> <name> <desc> <open> <pair> <from>`
 
   **host** --- host name or the IP address of the TCP server
-  
+
   **port** --- port number of the TCP server
-  
+
   **name** --- name of this Byteball chatbot
-  
+
   **desc** --- initial greeting message shown to freshly paired Byteball devices
-  
+
   **open** --- message sent to the TCP server where `%s` is replaced with the device address
-  
+
+  **pair** --- command executed on pairing attempts where `%s` and `%d` are replaced with pairing data
+
   **from** --- source IP address to use when connecting to the TCP server
-  
-  *Example:* `node bb2tcp.js india.colorado.edu 13 "Current Time" "Welcome!" "device %s" "127.0.0.7"`
+
+  *Example:* `node bb2tcp.js india.colorado.edu 13 "Current Time" "Welcome!" "device %s" "notify-send %d:%s" "127.0.0.7"`
 - Get the *pairing code* from the process log.
 
