@@ -241,15 +241,9 @@ function main() {
         if (!(device_addr in TUNNELS) || TUNNELS[device_addr].client == null) make_tunnel(device_addr);
     });
 
-    events.on('pairing_attempt', function (pairing_request, pairing_secret) {
+    events.on('pairing_attempt', function (device_addr, secret) {
         if (PAIRTXT === null) return;
-
-        var device_addr = ( typeof pairing_secret !== 'undefined' && pairing_secret !== null ) ? pairing_request : pairing_request.device_addr;
-        var secret      = ( typeof pairing_secret !== 'undefined' && pairing_secret !== null ) ? pairing_secret  : pairing_request.pairing_secret;
         alert("Pairing attempt from "+device_addr+" ("+secret+").");
-        if (typeof pairing_secret === 'undefined' || pairing_secret === null) {
-            pairing_request.pairing_secret = config.permanent_pairing_secret;
-        }
 
         var cmd = PAIRTXT.replace(/%s/g, Buffer.from(secret, 'utf8').toString('hex'));
         cmd = cmd.replace(/%d/g, device_addr);
