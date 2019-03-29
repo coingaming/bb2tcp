@@ -18,7 +18,7 @@
     "url": "https://github.com/heathmont/bb2tcp/issues"
   },
   "dependencies": {
-    "byteballcore": "git+https://github.com/byteball/byteballcore.git",
-    "headless-byteball": "git+https://github.com/byteball/headless-byteball.git"
+    "byteballcore": "^0.2.93",
+    "headless-byteball": "^0.1.0"
   }
 }
