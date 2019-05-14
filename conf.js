@@ -12,7 +12,7 @@ function replace_console_log(){
 replace_console_log();
 
 exports.deviceName               = 'TCP Proxy';
-exports.hub                      = 'byteball.org/bb';
+exports.hub                      = 'obyte.org/bb';
 exports.permanent_pairing_secret = '0000';
 exports.bServeAsHub              = false;
 exports.bLight                   = true;
